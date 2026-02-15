@@ -1,16 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
-from google.adk.runners import Runner
 
-from app.agentic.orchestrator.agent import app
 from app.core.security import get_current_user
 from app.models.schemas.chat import ChatRequest, ChatResponse
 from app.services.chat_service import process_chat_message
 from app.services.session_service import session_service
+from app.utils.logging import logger
 
 router = APIRouter()
 
 
-@router.post("/", response_model=ChatResponse)
+@router.post("/chat", response_model=ChatResponse)
 async def chat(
     request: ChatRequest,
     current_user: dict = Depends(get_current_user),
@@ -30,7 +29,7 @@ async def chat(
             user_id=user_id,
             session_id=session_id
         )
-        print(f"Session retrieved: {session}")
+        logger.info("Session retrieved", session=session)
         if not session:
             # Get or create session
             session = await session_service.create_session(
@@ -39,7 +38,7 @@ async def chat(
                 session_id=session_id,
                 state={"auth_token": current_user.get("token")}
             )
-        print(f"Session: {session}")
+        logger.info("Session created", session=session)
         response = await process_chat_message(request, session)
         return response    
     except Exception as e:

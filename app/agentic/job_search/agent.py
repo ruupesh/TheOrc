@@ -1,7 +1,11 @@
 import os
 import sys
+import json
+from datetime import datetime
+from pathlib import Path
 
 from google.adk.agents.llm_agent import Agent
+from google.adk.agents.callback_context import CallbackContext
 from google.adk.models.lite_llm import LiteLlm
 from google.adk.a2a.utils.agent_to_a2a import to_a2a
 from google.adk.tools.mcp_tool.mcp_session_manager import StdioConnectionParams
@@ -14,7 +18,7 @@ from starlette.responses import JSONResponse
 
 # Get the path to the 'src' directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.join(current_dir, '..', '..')
+src_dir = os.path.join(current_dir, '..')
 
 # Add the tools and prompts directories to the system path
 tools_dir = os.path.join(src_dir, 'tools')
@@ -32,6 +36,88 @@ from dotenv import load_dotenv
 load_dotenv()
 
 AGENT_MODEL = os.getenv("AGENT_MODEL")
+
+
+# Create logs directory if it doesn't exist
+LOGS_DIR = Path(__file__).parent / "conversation_logs"
+LOGS_DIR.mkdir(exist_ok=True)
+
+
+def log_conversation_history(callback_context: CallbackContext):
+    """
+    Callback to log the conversation history (session events) to a file.
+    
+    This captures what history the remote agent receives from the calling agent.
+    For A2A agents, this will show the reconstructed message parts sent by RemoteA2aAgent.
+    """
+    try:
+        session = callback_context._invocation_context.session
+        invocation_id = callback_context._invocation_context.invocation_id
+        
+        # Create a structured log of the conversation
+        log_data = {
+            "timestamp": datetime.now().isoformat(),
+            "session_id": session.id,
+            "invocation_id": invocation_id,
+            "app_name": session.app_name,
+            "user_id": session.user_id,
+            "last_update": str(session.last_update_time),
+            "state": dict(session.state),  # Current session state
+            "events": []
+        }
+        
+        # Add all events (conversation history)
+        for event in session.events:
+            event_data = {
+                "invocation_id": event.invocation_id,
+                "author": event.author,
+                "content": None,
+                "actions": None,
+            }
+            
+            # Extract content if available
+            if event.content and event.content.parts:
+                event_data["content"] = {
+                    "role": event.content.role,
+                    "parts": []
+                }
+                for part in event.content.parts:
+                    part_info = {}
+                    if part.text:
+                        part_info["text"] = part.text
+                    if part.function_call:
+                        part_info["function_call"] = {
+                            "name": part.function_call.name,
+                            "args": part.function_call.args if hasattr(part.function_call, 'args') else None
+                        }
+                    if part.function_response:
+                        part_info["function_response"] = {
+                            "name": part.function_response.name,
+                            "response": str(part.function_response.response)[:200]  # Truncate long responses
+                        }
+                    event_data["content"]["parts"].append(part_info)
+            
+            # Extract actions if available
+            if event.actions:
+                event_data["actions"] = {
+                    "state_delta": event.actions.state_delta if event.actions.state_delta else None,
+                    "transfer_to_agent": event.actions.transfer_to_agent if hasattr(event.actions, 'transfer_to_agent') and event.actions.transfer_to_agent else None,
+                }
+            
+            log_data["events"].append(event_data)
+        
+        # Write to file with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        log_file = LOGS_DIR / f"conversation_{session.id}_{timestamp}.json"
+        
+        with open(log_file, 'w', encoding='utf-8') as f:
+            json.dump(log_data, f, indent=2, ensure_ascii=False)
+        
+        print(f"[Conversation Log] History written to: {log_file}")
+        print(f"[Conversation Log] Total events: {len(session.events)}")
+        
+    except Exception as e:
+        print(f"[Conversation Log] Error logging history: {e}")
 
 
 # Dummy secret token for validation (replace with real JWT validation in production)
@@ -114,10 +200,11 @@ root_agent = Agent(
     description="A job search agent that finds job opportunities on web and saves the results to disk.",
     instruction=SYSTEM_PROMPT,
     tools=[duckduckgo_toolset, write_to_disk],
+    before_agent_callback=log_conversation_history,  # Log history before agent processes
 )
 
 
 # Create the A2A app and add JWT validation middleware
 a2a_app = to_a2a(root_agent, port=8001)
 a2a_app.add_middleware(JWTValidationMiddleware)
-a2a_app.add_websocket_route
+# a2a_app.add_websocket_route

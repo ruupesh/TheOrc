@@ -1,0 +1,56 @@
+# MCP Toolset Configurations
+# Each entry defines an MCP server connection that provides tools to agents.
+#
+# Supported connection types:
+#   stdio               : Local MCP server via stdin/stdout (e.g. npx, uv, python)
+#   streamable_http     : Remote MCP server via Streamable HTTP
+#   sse                 : Remote MCP server via Server-Sent Events
+#
+# Fields (common):
+#   name                (required) : Unique identifier for this toolset
+#   connection_type     (required) : One of "stdio", "streamable_http", "sse"
+#   timeout             (optional) : Connection timeout in seconds (default: 30)
+#   authentication_flag (optional) : Whether to include auth headers (default: false)
+#   tool_filter         (optional) : List of specific tool names to include (default: all)
+#
+# Fields (stdio):
+#   command             (required) : Command to launch the MCP server (e.g. "uv", "npx", "python")
+#   args                (required) : List of arguments for the command
+#   env                 (optional) : Environment variables as key-value pairs
+#
+# Fields (streamable_http / sse):
+#   url                 (required) : URL of the remote MCP server
+#   headers             (optional) : Additional HTTP headers as key-value pairs
+#   sse_read_timeout    (optional) : Read timeout for SSE/streaming in seconds (default: 300)
+#   auth_token          (optional) : Bearer token to use when authentication_flag is true
+
+mcp_toolsets:
+  - name: "duckduckgo_search"
+    connection_type: "stdio"
+    command: "uv"
+    args:
+      - "run"
+      - "${DDG_MCP_PATH}"
+    timeout: 30
+    authentication_flag: false
+
+  # Example: Remote MCP server via Streamable HTTP
+  # - name: "remote_tools"
+  #   connection_type: "streamable_http"
+  #   url: "http://localhost:9000/mcp"
+  #   timeout: 30
+  #   sse_read_timeout: 300
+  #   authentication_flag: true
+  #   auth_token: "my-secret-token"
+  #   headers:
+  #     X-Custom-Header: "custom-value"
+  #   tool_filter:
+  #     - "specific_tool_name"
+
+  # Example: Remote MCP server via SSE
+  # - name: "sse_tools"
+  #   connection_type: "sse"
+  #   url: "http://localhost:9001/sse"
+  #   timeout: 10
+  #   sse_read_timeout: 300
+  #   authentication_flag: false

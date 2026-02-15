@@ -11,3 +11,5 @@ litellm
 mcp
 duckduckgo-mcp-server
 uv
+pyyaml
+structlog

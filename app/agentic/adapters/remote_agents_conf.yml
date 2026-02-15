@@ -1,0 +1,22 @@
+# Remote A2A Agent Configurations
+# Each entry defines a remote agent accessible via the A2A protocol.
+#
+# Fields:
+#   name              (required) : Unique agent identifier used in transfer_to_agent
+#   description       (required) : Description of what the agent does (used by LLM for delegation)
+#   host              (required) : Base URL of the remote agent server
+#   port              (required) : Port the remote agent is running on
+#   agent_card_path   (optional) : Path to the agent card JSON endpoint (default: /.well-known/agent.json)
+#   timeout           (optional) : HTTP request timeout in seconds (default: 300)
+#   full_history      (optional) : Send full conversation history to stateless agents (default: true)
+#   authentication_flag (optional) : Whether to include auth headers in requests (default: false)
+
+remote_agents:
+  - name: "job_search_assistant"
+    description: "A job search agent that finds job opportunities and saves the results to disk."
+    host: "http://localhost"
+    port: 8001
+    agent_card_path: "/.well-known/agent.json"
+    timeout: 300
+    full_history: true
+    authentication_flag: true

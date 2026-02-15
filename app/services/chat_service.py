@@ -3,7 +3,7 @@ from google.adk.sessions import Session
 from google.genai import types
 from google.adk.runners import Runner
 
-from app.agentic.orchestrator.agent import app
+from app.agentic.orchestrator.agent import RootAgent
 from app.services.session_service import session_service
 from app.models.schemas.chat import (
     ChatRequest,
@@ -11,11 +11,7 @@ from app.models.schemas.chat import (
     ChatResponseContent,
     HITLRequestedItem
 )
-
-runner = Runner(
-    app=app,
-    session_service=session_service
-)
+from app.utils.logging import logger
 
 async def process_chat_message(
     request: ChatRequest,
@@ -36,11 +32,13 @@ async def process_chat_message(
     try:
         # Create the message content
         if request.content.message:
+            logger.info("Received user message")
             new_message = types.Content(
                 role="user",
                 parts=[types.Part(text=request.content.message)]
             )
         elif request.content.hitl_approval:
+            logger.info("Received HITL approval response")
             hitl_update = []
             for hitl_obj in request.content.hitl_approval:
                 # Create ToolConfirmation response
@@ -63,11 +61,17 @@ async def process_chat_message(
             )
         else:
             raise ValueError("Either message or hitl_approval must be provided in the request content.")
-        print("Session ID:", session.id)
+
         # Run the agent and collect response
         response_text = None
         hitl_requests = []
         events = []
+        root_agent = RootAgent(session.state.get("auth_token"))
+        app = root_agent.get_root_app()
+        runner = Runner(
+            app=app,
+            session_service=session_service
+        )
         async for event in runner.run_async(
             user_id=request.user_id,
             session_id=session.id,
@@ -91,7 +95,7 @@ async def process_chat_message(
         
         content = ChatResponseContent(
             message=response_text,
-            metadata={},
+            metadata={"events": events},
             hitl_requested=hitl_requests,
         )
 
@@ -101,5 +105,5 @@ async def process_chat_message(
             content=content,
         )
     except Exception as e:
-        print(f"Error processing chat message: {e}")
+        logger.error(f"Error processing chat message: {e}")
         raise e
