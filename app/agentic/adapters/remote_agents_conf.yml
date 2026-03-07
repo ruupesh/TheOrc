@@ -21,3 +21,103 @@ remote_agents:
     full_history: true
     authentication_flag: true
     allow_conversation_history: true
+
+  - name: "github_assistant"
+    description: "A GitHub operations agent that manages repositories, issues, pull requests, and performs code search across GitHub."
+    host: "http://localhost"
+    port: 8002
+    agent_card_path: "/.well-known/agent.json"
+    timeout: 300
+    full_history: true
+    authentication_flag: true
+    allow_conversation_history: true
+
+  - name: "filesystem_assistant"
+    description: "A filesystem operations agent that explores, reads, writes, searches, and manages files and directories on the local system."
+    host: "http://localhost"
+    port: 8003
+    agent_card_path: "/.well-known/agent.json"
+    timeout: 300
+    full_history: true
+    authentication_flag: true
+    allow_conversation_history: true
+
+  - name: "web_research_assistant"
+    description: "A web research agent that fetches, analyzes, and summarizes content from any public web page or API endpoint."
+    host: "http://localhost"
+    port: 8004
+    agent_card_path: "/.well-known/agent.json"
+    timeout: 300
+    full_history: true
+    authentication_flag: true
+    allow_conversation_history: true
+
+  - name: "knowledge_manager"
+    description: "A knowledge management agent that maintains a persistent knowledge graph with entities, observations, and relations for long-term memory."
+    host: "http://localhost"
+    port: 8005
+    agent_card_path: "/.well-known/agent.json"
+    timeout: 300
+    full_history: true
+    authentication_flag: true
+    allow_conversation_history: true
+
+  - name: "database_analyst"
+    description: "A database analyst agent that executes SQL queries, designs schemas, analyzes data, and manages SQLite databases."
+    host: "http://localhost"
+    port: 8006
+    agent_card_path: "/.well-known/agent.json"
+    timeout: 300
+    full_history: true
+    authentication_flag: true
+    allow_conversation_history: true
+
+  - name: "reasoning_assistant"
+    description: "A reasoning and problem-solving agent that uses structured sequential thinking to break down complex problems, analyze decisions, debug issues, and plan tasks."
+    host: "http://localhost"
+    port: 8007
+    agent_card_path: "/.well-known/agent.json"
+    timeout: 300
+    full_history: true
+    authentication_flag: true
+    allow_conversation_history: true
+
+  - name: "browser_automation"
+    description: "A browser automation agent that navigates web pages, takes screenshots, fills forms, extracts content, and performs web testing using a headless Chrome browser."
+    host: "http://localhost"
+    port: 8008
+    agent_card_path: "/.well-known/agent.json"
+    timeout: 300
+    full_history: true
+    authentication_flag: true
+    allow_conversation_history: true
+
+  - name: "git_assistant"
+    description: "A Git operations agent that analyzes commit history, shows diffs, manages branches, performs blame analysis, and investigates code changes in Git repositories."
+    host: "http://localhost"
+    port: 8009
+    agent_card_path: "/.well-known/agent.json"
+    timeout: 300
+    full_history: true
+    authentication_flag: true
+    allow_conversation_history: true
+
+  - name: "time_assistant"
+    description: "A time and timezone agent that provides current times, converts between timezones, helps schedule meetings across zones, and performs date/time calculations."
+    host: "http://localhost"
+    port: 8010
+    agent_card_path: "/.well-known/agent.json"
+    timeout: 300
+    full_history: true
+    authentication_flag: true
+    allow_conversation_history: true
+
+  - name: "report_writer"
+    description: "A report writing agent that researches topics from the web and produces well-structured, professional reports saved to disk in Markdown format."
+    host: "http://localhost"
+    port: 8011
+    agent_card_path: "/.well-known/agent.json"
+    timeout: 300
+    full_history: true
+    authentication_flag: true
+    allow_conversation_history: true

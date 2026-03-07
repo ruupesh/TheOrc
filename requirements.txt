@@ -13,3 +13,6 @@ duckduckgo-mcp-server
 uv
 pyyaml
 structlog
+mcp-server-sqlite
+mcp-server-git
+mcp-server-time

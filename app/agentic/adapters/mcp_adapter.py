@@ -11,6 +11,7 @@ Usage:
 """
 
 import os
+import shutil
 from pathlib import Path
 from string import Template
 from typing import Any, Optional
@@ -30,6 +31,35 @@ from app.utils.logging import logger
 
 # Path to the default configuration file (same directory as this module)
 _DEFAULT_CONF_PATH = Path(__file__).parent / "mcp_conf.yml"
+_PROJECT_ROOT = Path(__file__).resolve().parents[3]
+_DEFAULT_ENV_VALUES = {
+    "DDG_MCP_PATH": str(
+        _PROJECT_ROOT
+        / "venv"
+        / "Lib"
+        / "site-packages"
+        / "duckduckgo_mcp_server"
+        / "server.py"
+    ),
+    "FILESYSTEM_ALLOWED_PATHS": str(_PROJECT_ROOT),
+    "SQLITE_DB_PATH": str(_PROJECT_ROOT / "database.db"),
+    "GIT_REPO_PATH": str(_PROJECT_ROOT),
+    "GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", ""),
+}
+
+
+def _substitute_value(value: Any, substitutions: dict[str, str]) -> Any:
+    if isinstance(value, str):
+        return (
+            Template(value).safe_substitute(substitutions) if "${" in value else value
+        )
+    if isinstance(value, list):
+        return [_substitute_value(item, substitutions) for item in value]
+    if isinstance(value, dict):
+        return {
+            key: _substitute_value(item, substitutions) for key, item in value.items()
+        }
+    return value
 
 
 class McpToolsetConfig(BaseModel):
@@ -86,21 +116,12 @@ def get_mcp_conf(config_path: Optional[str | Path] = None) -> list[dict[str, Any
         )
 
     configs: list[dict[str, Any]] = raw["mcp_toolsets"]
+    substitutions = {**_DEFAULT_ENV_VALUES, **os.environ}
 
     # Substitute ${ENV_VAR} references with actual environment values
     for cfg in configs:
         for key, value in cfg.items():
-            if isinstance(value, str) and "${" in value:
-                cfg[key] = Template(value).safe_substitute(os.environ)
-            elif isinstance(value, list):
-                cfg[key] = [
-                    (
-                        Template(v).safe_substitute(os.environ)
-                        if isinstance(v, str) and "${" in v
-                        else v
-                    )
-                    for v in value
-                ]
+            cfg[key] = _substitute_value(value, substitutions)
 
     return configs
 
@@ -149,15 +170,35 @@ class McpAdapter:
             "Creating MCP toolset from configuration", configuration=self._configs
         )
         for cfg in self._configs:
-            connection_params = self._build_connection_params(cfg)
-            toolset = McpToolset(
-                connection_params=connection_params,
-                tool_filter=cfg.tool_filter,
-            )
-            logger.info(
-                "Created McpToolset", name=cfg.name, connection_type=cfg.connection_type
-            )
-            toolsets.append(toolset)
+            skip_reason = self._get_skip_reason(cfg)
+            if skip_reason:
+                logger.warning(
+                    "Skipping MCP toolset",
+                    name=cfg.name,
+                    connection_type=cfg.connection_type,
+                    reason=skip_reason,
+                )
+                continue
+
+            try:
+                connection_params = self._build_connection_params(cfg)
+                toolset = McpToolset(
+                    connection_params=connection_params,
+                    tool_filter=cfg.tool_filter,
+                )
+                logger.info(
+                    "Created McpToolset",
+                    name=cfg.name,
+                    connection_type=cfg.connection_type,
+                )
+                toolsets.append(toolset)
+            except Exception as exc:
+                logger.warning(
+                    "Skipping MCP toolset due to configuration error",
+                    name=cfg.name,
+                    connection_type=cfg.connection_type,
+                    error=str(exc),
+                )
 
         return toolsets
 
@@ -181,6 +222,50 @@ class McpAdapter:
                     tool_filter=cfg.tool_filter,
                 )
         raise KeyError(f"No MCP toolset config found with name '{name}'")
+
+    def get_mcp_tool_sets_by_name(self) -> dict[str, McpToolset]:
+        """Build and return MCP toolsets indexed by their configuration name.
+
+        Only returns toolsets that pass validation checks.  Toolsets with
+        missing commands, unresolved environment variables, or other issues
+        are silently skipped (with a warning log).
+
+        Returns:
+            A dict mapping toolset name to the ready-to-use ``McpToolset``.
+        """
+        result: dict[str, McpToolset] = {}
+
+        for cfg in self._configs:
+            skip_reason = self._get_skip_reason(cfg)
+            if skip_reason:
+                logger.warning(
+                    "Skipping MCP toolset",
+                    name=cfg.name,
+                    connection_type=cfg.connection_type,
+                    reason=skip_reason,
+                )
+                continue
+            try:
+                connection_params = self._build_connection_params(cfg)
+                toolset = McpToolset(
+                    connection_params=connection_params,
+                    tool_filter=cfg.tool_filter,
+                )
+                logger.info(
+                    "Created McpToolset (by-name)",
+                    name=cfg.name,
+                    connection_type=cfg.connection_type,
+                )
+                result[cfg.name] = toolset
+            except Exception as exc:
+                logger.warning(
+                    "Skipping MCP toolset due to configuration error",
+                    name=cfg.name,
+                    connection_type=cfg.connection_type,
+                    error=str(exc),
+                )
+
+        return result
 
     @property
     def configs(self) -> list[McpToolsetConfig]:
@@ -221,14 +306,71 @@ class McpAdapter:
         """Build ``StdioConnectionParams`` from config."""
         if not cfg.command:
             raise ValueError(f"'command' is required for stdio toolset '{cfg.name}'")
+
+        args = list(cfg.args)
+        if cfg.name == "filesystem" and len(args) > 2:
+            normalized_args = args[:2]
+            for item in args[2:]:
+                if isinstance(item, str) and "," in item:
+                    normalized_args.extend(
+                        [part.strip() for part in item.split(",") if part.strip()]
+                    )
+                else:
+                    normalized_args.append(item)
+            args = normalized_args
+
         return StdioConnectionParams(
             server_params=StdioServerParameters(
                 command=cfg.command,
-                args=cfg.args,
+                args=args,
                 env=cfg.env,
             ),
             timeout=cfg.timeout,
         )
+
+    def _get_skip_reason(self, cfg: McpToolsetConfig) -> Optional[str]:
+        if cfg.connection_type != "stdio":
+            return None
+
+        if not cfg.command:
+            return "missing command"
+
+        if shutil.which(cfg.command) is None:
+            return f"command '{cfg.command}' is not available"
+
+        unresolved_args = [
+            arg for arg in cfg.args if isinstance(arg, str) and "${" in arg
+        ]
+        if unresolved_args:
+            return f"unresolved placeholders in args: {unresolved_args}"
+
+        if cfg.env:
+            unresolved_env = {
+                key: value
+                for key, value in cfg.env.items()
+                if isinstance(value, str) and "${" in value
+            }
+            if unresolved_env:
+                return f"unresolved placeholders in env: {unresolved_env}"
+
+        if cfg.name == "github":
+            token = (cfg.env or {}).get("GITHUB_PERSONAL_ACCESS_TOKEN", "").strip()
+            if not token:
+                return "missing GITHUB_PERSONAL_ACCESS_TOKEN"
+
+        if cfg.name == "duckduckgo_search":
+            ddg_script = next(
+                (
+                    arg
+                    for arg in cfg.args
+                    if isinstance(arg, str) and arg.endswith("server.py")
+                ),
+                None,
+            )
+            if not ddg_script or not Path(ddg_script).exists():
+                return f"DuckDuckGo MCP server not found at '{ddg_script}'"
+
+        return None
 
     def _build_streamable_http_params(
         self, cfg: McpToolsetConfig

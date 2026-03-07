@@ -34,23 +34,87 @@ mcp_toolsets:
     timeout: 30
     authentication_flag: false
 
-  # Example: Remote MCP server via Streamable HTTP
-  # - name: "remote_tools"
-  #   connection_type: "streamable_http"
-  #   url: "http://localhost:9000/mcp"
-  #   timeout: 30
-  #   sse_read_timeout: 300
-  #   authentication_flag: true
-  #   auth_token: "my-secret-token"
-  #   headers:
-  #     X-Custom-Header: "custom-value"
-  #   tool_filter:
-  #     - "specific_tool_name"
+  - name: "github"
+    connection_type: "stdio"
+    command: "npx"
+    args:
+      - "-y"
+      - "@modelcontextprotocol/server-github"
+    env:
+      GITHUB_PERSONAL_ACCESS_TOKEN: "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+    timeout: 30
+    authentication_flag: false
 
-  # Example: Remote MCP server via SSE
-  # - name: "sse_tools"
-  #   connection_type: "sse"
-  #   url: "http://localhost:9001/sse"
-  #   timeout: 10
-  #   sse_read_timeout: 300
-  #   authentication_flag: false
+  - name: "filesystem"
+    connection_type: "stdio"
+    command: "npx"
+    args:
+      - "-y"
+      - "@modelcontextprotocol/server-filesystem"
+      - "${FILESYSTEM_ALLOWED_PATHS}"
+    timeout: 30
+    authentication_flag: false
+
+  - name: "fetch"
+    connection_type: "stdio"
+    command: "npx"
+    args:
+      - "-y"
+      - "fetch-mcp"
+    timeout: 30
+    authentication_flag: false
+
+  - name: "memory"
+    connection_type: "stdio"
+    command: "npx"
+    args:
+      - "-y"
+      - "@modelcontextprotocol/server-memory"
+    timeout: 30
+    authentication_flag: false
+
+  - name: "sqlite"
+    connection_type: "stdio"
+    command: "uvx"
+    args:
+      - "mcp-server-sqlite"
+      - "--db-path"
+      - "${SQLITE_DB_PATH}"
+    timeout: 30
+    authentication_flag: false
+
+  - name: "sequential_thinking"
+    connection_type: "stdio"
+    command: "npx"
+    args:
+      - "-y"
+      - "@modelcontextprotocol/server-sequential-thinking"
+    timeout: 30
+    authentication_flag: false
+
+  - name: "puppeteer"
+    connection_type: "stdio"
+    command: "npx"
+    args:
+      - "-y"
+      - "@modelcontextprotocol/server-puppeteer"
+    timeout: 30
+    authentication_flag: false
+
+  - name: "git"
+    connection_type: "stdio"
+    command: "uvx"
+    args:
+      - "mcp-server-git"
+      - "--repository"
+      - "${GIT_REPO_PATH}"
+    timeout: 30
+    authentication_flag: false
+
+  - name: "time"
+    connection_type: "stdio"
+    command: "uvx"
+    args:
+      - "mcp-server-time"
+    timeout: 30
+    authentication_flag: false
