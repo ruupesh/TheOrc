@@ -1,0 +1,765 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "TheOrchestrator API",
+		"description": "Complete API collection for TheOrchestrator — Agentic Marketplace.\n\n**Setup:**\n1. Register a user via Auth > Register\n2. Login via Auth > Login (token auto-saved)\n3. All other requests use the saved token automatically\n\n**Variables:**\n- `base_url`: http://localhost:8000/api/v1\n- `token`: Auto-populated after login",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000/api/v1"
+		},
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "user_id",
+			"value": ""
+		},
+		{
+			"key": "agent_id",
+			"value": ""
+		},
+		{
+			"key": "mcp_tool_id",
+			"value": ""
+		},
+		{
+			"key": "listing_id",
+			"value": ""
+		},
+		{
+			"key": "installation_id",
+			"value": ""
+		},
+		{
+			"key": "session_id",
+			"value": "test-session-001"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"description": "User registration, login, and profile endpoints.",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var json = pm.response.json();",
+									"    pm.collectionVariables.set('user_id', json.id);",
+									"    pm.test('User registered successfully', function () {",
+									"        pm.expect(json.email).to.exist;",
+									"        pm.expect(json.username).to.exist;",
+									"        pm.expect(json.id).to.exist;",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"john@example.com\",\n    \"username\": \"johndoe\",\n    \"password\": \"MySecurePass123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "register"]
+						},
+						"description": "Register a new user account. No auth required.\n\n**Validation:**\n- email: valid email format\n- username: 3-100 characters\n- password: 8-128 characters"
+					}
+				},
+				{
+					"name": "Register User B (for marketplace testing)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var json = pm.response.json();",
+									"    pm.collectionVariables.set('user_b_id', json.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"jane@example.com\",\n    \"username\": \"janedoe\",\n    \"password\": \"AnotherPass456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "register"]
+						},
+						"description": "Register a second user for testing marketplace flows (User B publishes, User A installs)."
+					}
+				},
+				{
+					"name": "Login (User A)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var json = pm.response.json();",
+									"    pm.collectionVariables.set('token', json.access_token);",
+									"    pm.test('Login successful, token saved', function () {",
+									"        pm.expect(json.access_token).to.exist;",
+									"        pm.expect(json.token_type).to.eql('bearer');",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"john@example.com\",\n    \"password\": \"MySecurePass123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						},
+						"description": "Login with email & password. Returns a JWT token that is auto-saved to the `token` collection variable.\n\nAll subsequent requests use this token via Bearer auth."
+					}
+				},
+				{
+					"name": "Login (User B)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var json = pm.response.json();",
+									"    pm.collectionVariables.set('token_b', json.access_token);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"jane@example.com\",\n    \"password\": \"AnotherPass456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						},
+						"description": "Login as User B for marketplace testing. Token saved as `token_b`."
+					}
+				},
+				{
+					"name": "Get My Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Profile returned', function () {",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.email).to.exist;",
+									"    pm.expect(json.username).to.exist;",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/auth/me",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "me"]
+						},
+						"description": "Get the current authenticated user's profile. Requires Bearer token."
+					}
+				}
+			]
+		},
+		{
+			"name": "Agents",
+			"description": "CRUD operations for remote A2A agents.",
+			"item": [
+				{
+					"name": "List My Agents",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Agents list returned', function () {",
+									"    var json = pm.response.json();",
+									"    pm.expect(json).to.be.an('array');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/agents",
+							"host": ["{{base_url}}"],
+							"path": ["agents"]
+						},
+						"description": "List all agents accessible to the current user:\n- Agents you own\n- Agents installed from the marketplace"
+					}
+				},
+				{
+					"name": "Create Agent",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var json = pm.response.json();",
+									"    pm.collectionVariables.set('agent_id', json.id);",
+									"    pm.test('Agent created', function () {",
+									"        pm.expect(json.name).to.eql('my_custom_agent');",
+									"        pm.expect(json.port).to.eql(9001);",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"my_custom_agent\",\n    \"description\": \"A custom AI agent that handles customer support queries and ticket management.\",\n    \"host\": \"http://localhost\",\n    \"port\": 9001,\n    \"agent_card_path\": \"/.well-known/agent.json\",\n    \"timeout\": 300,\n    \"full_history\": true,\n    \"authentication_flag\": true,\n    \"allow_conversation_history\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/agents",
+							"host": ["{{base_url}}"],
+							"path": ["agents"]
+						},
+						"description": "Register a new remote A2A agent.\n\n**Required fields:** name, description, host, port\n**Optional fields:** agent_card_path, timeout, full_history, authentication_flag, allow_conversation_history"
+					}
+				},
+				{
+					"name": "Get Agent by ID",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/agents/{{agent_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["agents", "{{agent_id}}"]
+						},
+						"description": "Get details of a specific agent by its UUID."
+					}
+				},
+				{
+					"name": "Update Agent",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"description\": \"Updated: A custom AI agent for advanced customer support with sentiment analysis.\",\n    \"timeout\": 600,\n    \"port\": 9002\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/agents/{{agent_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["agents", "{{agent_id}}"]
+						},
+						"description": "Update an agent you own. All fields are optional — only send the fields you want to change."
+					}
+				},
+				{
+					"name": "Delete Agent",
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{base_url}}/agents/{{agent_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["agents", "{{agent_id}}"]
+						},
+						"description": "Delete an agent you own. System agents cannot be deleted.\n\nReturns 204 No Content on success."
+					}
+				}
+			]
+		},
+		{
+			"name": "MCP Tools",
+			"description": "CRUD operations for MCP toolsets.",
+			"item": [
+				{
+					"name": "List My MCP Tools",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('MCP tools list returned', function () {",
+									"    var json = pm.response.json();",
+									"    pm.expect(json).to.be.an('array');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/mcp-tools",
+							"host": ["{{base_url}}"],
+							"path": ["mcp-tools"]
+						},
+						"description": "List all MCP tools owned by the current user."
+					}
+				},
+				{
+					"name": "Create MCP Tool (stdio)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var json = pm.response.json();",
+									"    pm.collectionVariables.set('mcp_tool_id', json.id);",
+									"    pm.test('MCP tool created', function () {",
+									"        pm.expect(json.name).to.eql('my_custom_search');",
+									"        pm.expect(json.connection_type).to.eql('stdio');",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"my_custom_search\",\n    \"connection_type\": \"stdio\",\n    \"command\": \"npx\",\n    \"args\": [\"-y\", \"@modelcontextprotocol/server-brave-search\"],\n    \"env\": {\n        \"BRAVE_API_KEY\": \"your-brave-api-key-here\"\n    },\n    \"timeout\": 30,\n    \"authentication_flag\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/mcp-tools",
+							"host": ["{{base_url}}"],
+							"path": ["mcp-tools"]
+						},
+						"description": "Register a new stdio-based MCP tool.\n\n**Required:** name, connection_type\n**Stdio fields:** command, args, env\n**Optional:** timeout, authentication_flag, tool_filter"
+					}
+				},
+				{
+					"name": "Create MCP Tool (streamable_http)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"remote_calculator\",\n    \"connection_type\": \"streamable_http\",\n    \"url\": \"http://localhost:3000/mcp\",\n    \"headers\": {\n        \"X-Custom-Header\": \"my-value\"\n    },\n    \"timeout\": 30,\n    \"sse_read_timeout\": 300,\n    \"authentication_flag\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/mcp-tools",
+							"host": ["{{base_url}}"],
+							"path": ["mcp-tools"]
+						},
+						"description": "Register a remote MCP tool using Streamable HTTP connection.\n\n**Required:** name, connection_type, url\n**Optional:** headers, timeout, sse_read_timeout, authentication_flag"
+					}
+				},
+				{
+					"name": "Create MCP Tool (sse)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"event_stream_tool\",\n    \"connection_type\": \"sse\",\n    \"url\": \"http://localhost:3001/sse\",\n    \"timeout\": 30,\n    \"sse_read_timeout\": 600,\n    \"authentication_flag\": true,\n    \"auth_token\": \"my-sse-server-token\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/mcp-tools",
+							"host": ["{{base_url}}"],
+							"path": ["mcp-tools"]
+						},
+						"description": "Register a remote MCP tool using Server-Sent Events connection.\n\n**Required:** name, connection_type, url"
+					}
+				},
+				{
+					"name": "Get MCP Tool by ID",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/mcp-tools/{{mcp_tool_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["mcp-tools", "{{mcp_tool_id}}"]
+						},
+						"description": "Get details of a specific MCP tool by its UUID."
+					}
+				},
+				{
+					"name": "Update MCP Tool",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"timeout\": 60,\n    \"tool_filter\": [\"search\", \"lookup\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/mcp-tools/{{mcp_tool_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["mcp-tools", "{{mcp_tool_id}}"]
+						},
+						"description": "Update an MCP tool you own. All fields are optional."
+					}
+				},
+				{
+					"name": "Delete MCP Tool",
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{base_url}}/mcp-tools/{{mcp_tool_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["mcp-tools", "{{mcp_tool_id}}"]
+						},
+						"description": "Delete an MCP tool you own. System tools cannot be deleted.\n\nReturns 204 No Content on success."
+					}
+				}
+			]
+		},
+		{
+			"name": "Marketplace",
+			"description": "Agentic marketplace — publish, browse, install, and manage agents.",
+			"item": [
+				{
+					"name": "Publish Agent to Marketplace",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var json = pm.response.json();",
+									"    pm.collectionVariables.set('listing_id', json.id);",
+									"    pm.test('Agent published', function () {",
+									"        pm.expect(json.title).to.exist;",
+									"        pm.expect(json.is_published).to.be.true;",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"agent_id\": \"{{agent_id}}\",\n    \"title\": \"Customer Support AI Agent\",\n    \"description\": \"An advanced customer support agent powered by AI. Handles ticket creation, sentiment analysis, and automated responses. Runs on port 9001 and exposes A2A protocol.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/marketplace/publish",
+							"host": ["{{base_url}}"],
+							"path": ["marketplace", "publish"]
+						},
+						"description": "Publish one of your agents to the marketplace for other users to discover and install.\n\n**Prerequisite:** Create an agent first, then use its ID here.\n\n**Validation:**\n- You must own the agent\n- Agent can only be published once"
+					}
+				},
+				{
+					"name": "Browse Marketplace",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Marketplace listings returned', function () {",
+									"    var json = pm.response.json();",
+									"    pm.expect(json).to.be.an('array');",
+									"    if (json.length > 0) {",
+									"        pm.collectionVariables.set('listing_id', json[0].id);",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/marketplace",
+							"host": ["{{base_url}}"],
+							"path": ["marketplace"],
+							"query": []
+						},
+						"description": "Browse all published agents in the marketplace.\n\n**Query params:**\n- `search` (optional): filter by title or description\n- `skip` (optional, default 0): pagination offset\n- `limit` (optional, default 50, max 100): page size"
+					}
+				},
+				{
+					"name": "Browse Marketplace (with search)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/marketplace?search=customer&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["marketplace"],
+							"query": [
+								{ "key": "search", "value": "customer" },
+								{ "key": "limit", "value": "10" }
+							]
+						},
+						"description": "Search the marketplace by keyword in title or description."
+					}
+				},
+				{
+					"name": "Get Listing Details",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/marketplace/{{listing_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["marketplace", "{{listing_id}}"]
+						},
+						"description": "Get full details of a marketplace listing including agent info and publisher."
+					}
+				},
+				{
+					"name": "Install Agent from Marketplace",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var json = pm.response.json();",
+									"    pm.collectionVariables.set('installation_id', json.id);",
+									"    pm.test('Agent installed', function () {",
+									"        pm.expect(json.listing_id).to.exist;",
+									"        pm.expect(json.installed_at).to.exist;",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"listing_id\": \"{{listing_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/marketplace/install",
+							"host": ["{{base_url}}"],
+							"path": ["marketplace", "install"]
+						},
+						"description": "Install a marketplace agent into your orchestrator.\n\nThe agent runs on the publisher's infrastructure — your orchestrator calls it remotely via A2A protocol.\n\n**Validation:**\n- Cannot install your own agent\n- Cannot install the same agent twice"
+					}
+				},
+				{
+					"name": "My Installations",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/marketplace/installations/me",
+							"host": ["{{base_url}}"],
+							"path": ["marketplace", "installations", "me"]
+						},
+						"description": "List all agents you have installed from the marketplace."
+					}
+				},
+				{
+					"name": "Uninstall Agent",
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{base_url}}/marketplace/installations/{{installation_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["marketplace", "installations", "{{installation_id}}"]
+						},
+						"description": "Remove an installed marketplace agent from your orchestrator.\n\nReturns 204 No Content on success."
+					}
+				}
+			]
+		},
+		{
+			"name": "Chat",
+			"description": "The main conversation endpoint — the only user-facing orchestrator API.",
+			"item": [
+				{
+					"name": "Send Message",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Chat response received', function () {",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.role).to.eql('assistant');",
+									"    pm.expect(json.session_id).to.exist;",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"session_id\": \"{{session_id}}\",\n    \"content\": {\n        \"message\": \"Hello! What can you help me with today?\"\n    }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/chat",
+							"host": ["{{base_url}}"],
+							"path": ["chat"]
+						},
+						"description": "Send a message to the orchestrator.\n\n**Note:** `user_id` is extracted from your JWT token — you don't need to send it.\n\n**Fields:**\n- `session_id`: conversation session identifier (you choose this)\n- `content.message`: your message text"
+					}
+				},
+				{
+					"name": "Send Follow-up Message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"session_id\": \"{{session_id}}\",\n    \"content\": {\n        \"message\": \"Can you search for Python developer jobs in San Francisco?\"\n    }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/chat",
+							"host": ["{{base_url}}"],
+							"path": ["chat"]
+						},
+						"description": "Send a follow-up message in the same session. The orchestrator maintains conversation context."
+					}
+				},
+				{
+					"name": "Send HITL Approval",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"session_id\": \"{{session_id}}\",\n    \"content\": {\n        \"hitl_approval\": [\n            {\n                \"function_id\": \"call_abc123\",\n                \"function_name\": \"find_file_path\",\n                \"confirmed\": true,\n                \"payload\": {\n                    \"filename\": \"report.md\"\n                }\n            }\n        ]\n    }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/chat",
+							"host": ["{{base_url}}"],
+							"path": ["chat"]
+						},
+						"description": "Approve or deny a Human-in-the-Loop (HITL) request from the orchestrator.\n\nWhen the orchestrator needs confirmation before executing a sensitive tool, it returns `hitl_requested` items. Use this to respond with approval/denial."
+					}
+				},
+				{
+					"name": "New Session (different topic)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"session_id\": \"research-session-002\",\n    \"content\": {\n        \"message\": \"Research the latest trends in AI agents and write a summary report.\"\n    }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/chat",
+							"host": ["{{base_url}}"],
+							"path": ["chat"]
+						},
+						"description": "Start a new conversation in a different session. Each session maintains its own context."
+					}
+				},
+				{
+					"name": "Get Session Info",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/chat/session/{{session_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["chat", "session", "{{session_id}}"]
+						},
+						"description": "Get session details. Only accessible by the session owner.\n\nReturns 403 if the session belongs to another user."
+					}
+				}
+			]
+		}
+	]
+}

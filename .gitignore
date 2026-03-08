@@ -1,5 +1,6 @@
 # Virtual environment
 venv/
+**/venv/
 
 # Python
 __pycache__/
@@ -20,7 +21,13 @@ build/
 .env
 .env.*
 
+# Database
+*.db
+
 # OS
 Thumbs.db
 .DS_Store
 *.csv
+
+# Conversation logs
+conversation_logs/
