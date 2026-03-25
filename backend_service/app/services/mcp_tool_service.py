@@ -7,6 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.mcp_tool import McpTool
+from app.models.marketplace import UserAgentInstallation, MarketplaceListing
 from app.models.schemas.mcp_tool_schema import McpToolCreate, McpToolUpdate
 from app.utils.logging import logger
 
@@ -24,13 +25,58 @@ async def create_mcp_tool(
 
 
 async def get_user_mcp_tools(
-    db: AsyncSession, user_id: uuid.UUID
+    db: AsyncSession, user_id: uuid.UUID, include_installed: bool = True
 ) -> list[McpTool]:
-    """Get all MCP tools owned by the user."""
+    """Get MCP tools accessible to the user.
+
+    Includes:
+    - user-owned MCP tools
+    - MCP tools from listings published by the current user
+    - optionally MCP tools installed from the marketplace
+    """
     result = await db.execute(
         select(McpTool).where(McpTool.owner_id == user_id)
     )
-    return list(result.scalars().all())
+    tools = list(result.scalars().all())
+
+    # Include MCP tools from listings published by this user.
+    # This handles datasets where listing publisher and tool owner may differ.
+    result = await db.execute(
+        select(McpTool)
+        .join(MarketplaceListing, MarketplaceListing.mcp_tool_id == McpTool.id)
+        .where(
+            MarketplaceListing.publisher_id == user_id,
+            MarketplaceListing.mcp_tool_id.is_not(None),
+            MarketplaceListing.is_published == True,
+        )
+    )
+    published_tools = list(result.scalars().all())
+    existing_ids = {t.id for t in tools}
+    for tool in published_tools:
+        if tool.id not in existing_ids:
+            tools.append(tool)
+            existing_ids.add(tool.id)
+
+    if include_installed:
+        result = await db.execute(
+            select(McpTool)
+            .join(MarketplaceListing, MarketplaceListing.mcp_tool_id == McpTool.id)
+            .join(
+                UserAgentInstallation,
+                UserAgentInstallation.listing_id == MarketplaceListing.id,
+            )
+            .where(
+                UserAgentInstallation.user_id == user_id,
+                MarketplaceListing.is_published == True,
+            )
+        )
+        installed_tools = list(result.scalars().all())
+        for tool in installed_tools:
+            if tool.id not in existing_ids:
+                tools.append(tool)
+                existing_ids.add(tool.id)
+
+    return tools
 
 
 async def get_mcp_tool_by_id(

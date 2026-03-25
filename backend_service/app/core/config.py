@@ -11,14 +11,15 @@ class Settings(BaseSettings):
     API_V1_PREFIX: str = "/api/v1"
     DEBUG: bool = True
     AGENT_MODEL: str | None = None
-    AGENT_REASONING_EFFORT: str = "low"
-    AGENT_THINKING_LEVEL: str = "low"
+    AGENT_REASONING_EFFORT: str | None = None
+    AGENT_THINKING_LEVEL: str | None = None
     AGENT_INCLUDE_THOUGHTS: bool = False
     GOOGLE_API_KEY: str | None = None
     DDG_MCP_PATH: str | None = None
 
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://admin:admin@localhost:5432/my_db"
+    SQL_ECHO: bool = False
 
     # JWT Auth
     SECRET_KEY: str = "CHANGE-ME-TO-A-REAL-SECRET-KEY"

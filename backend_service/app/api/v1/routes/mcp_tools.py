@@ -18,7 +18,7 @@ async def list_mcp_tools(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> list[McpToolResponse]:
-    """List all MCP tools owned by the current user."""
+    """List MCP tools accessible to the current user (own + published by me + installed)."""
     user_id = uuid.UUID(current_user["user_id"])
     tools = await mcp_tool_service.get_user_mcp_tools(db, user_id)
     return [McpToolResponse.model_validate(t) for t in tools]

@@ -14,9 +14,15 @@ interface AgentCardProps {
   agent: Agent;
   onEdit: (agent: Agent) => void;
   onDelete: (agent: Agent) => void;
+  canManage?: boolean;
 }
 
-export default function AgentCard({ agent, onEdit, onDelete }: AgentCardProps) {
+export default function AgentCard({
+  agent,
+  onEdit,
+  onDelete,
+  canManage = false,
+}: AgentCardProps) {
   return (
     <Card>
       <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
@@ -48,7 +54,7 @@ export default function AgentCard({ agent, onEdit, onDelete }: AgentCardProps) {
               {agent.host}:{agent.port}
             </Typography>
           </Box>
-          {!agent.is_system && (
+          {canManage && !agent.is_system && (
             <Box sx={{ display: "flex", gap: 0.5, ml: 1 }}>
               <IconButton size="small" onClick={() => onEdit(agent)}>
                 <EditIcon fontSize="small" />

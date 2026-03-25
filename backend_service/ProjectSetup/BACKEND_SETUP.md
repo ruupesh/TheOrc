@@ -39,7 +39,7 @@ SECRET_KEY=replace-with-a-strong-secret
 Common optional variables:
 
 ```env
-AGENT_MODEL=gemini/gemini-3.1-pro-preview
+AGENT_MODEL=gemini/gemini-2.5-pro
 AGENT_REASONING_EFFORT=medium
 AGENT_THINKING_LEVEL=medium
 AGENT_INCLUDE_THOUGHTS=false

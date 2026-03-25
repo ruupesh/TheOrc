@@ -18,6 +18,7 @@ import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Typography from "@mui/material/Typography";
 import { useGetAgentsQuery } from "@/store/api/agentsApi";
 import { useGetMcpToolsQuery } from "@/store/api/mcpToolsApi";
+import { useGetMeQuery } from "@/store/api/authApi";
 import { usePublishItemMutation } from "@/store/api/marketplaceApi";
 import { useSnackbar } from "notistack";
 
@@ -40,7 +41,9 @@ export default function PublishDialog({ open, onClose }: PublishDialogProps) {
   const { enqueueSnackbar } = useSnackbar();
   const { data: agents } = useGetAgentsQuery();
   const { data: mcpTools } = useGetMcpToolsQuery();
+  const { data: user } = useGetMeQuery();
   const [publishItem, { isLoading }] = usePublishItemMutation();
+  const currentUserId = user?.id ? String(user.id) : "";
 
   const {
     register,
@@ -72,8 +75,14 @@ export default function PublishDialog({ open, onClose }: PublishDialogProps) {
     setValue("item_id", "");
   }, [itemType, setValue]);
 
-  const myAgents = agents?.filter((a) => !a.is_system) || [];
-  const myTools = mcpTools?.filter((t) => !t.is_system) || [];
+  const myAgents =
+    agents?.filter(
+      (a) => !a.is_system && !!currentUserId && String(a.owner_id) === currentUserId
+    ) || [];
+  const myTools =
+    mcpTools?.filter(
+      (t) => !t.is_system && !!currentUserId && String(t.owner_id) === currentUserId
+    ) || [];
   const items = itemType === "agent" ? myAgents : myTools;
 
   const onSubmit = async (data: FormData) => {

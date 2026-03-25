@@ -128,6 +128,22 @@ async def uninstall_agent(
         )
 
 
+@router.delete("/{listing_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_listing(
+    listing_id: uuid.UUID,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Remove one of your own marketplace listings."""
+    user_id = uuid.UUID(current_user["user_id"])
+    removed = await marketplace_service.remove_listing(db, user_id, listing_id)
+    if not removed:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Listing not found or not owned by you",
+        )
+
+
 def _build_listing_response(listing) -> MarketplaceListingResponse:
     """Build a MarketplaceListingResponse from a MarketplaceListing ORM object."""
     return MarketplaceListingResponse(

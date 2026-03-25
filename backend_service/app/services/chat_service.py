@@ -115,5 +115,5 @@ async def process_chat_message(
             content=content,
         )
     except Exception as e:
-        logger.error(f"Error processing chat message: {e}")
-        raise e
+        logger.error(error=e, message="Error in process_chat_message")
+        raise

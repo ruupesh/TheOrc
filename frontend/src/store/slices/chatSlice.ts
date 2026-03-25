@@ -6,12 +6,16 @@ interface ChatState {
   sessionId: string;
   messages: ChatMessage[];
   isLoading: boolean;
+  enabledAgentIds: string[] | null;
+  enabledMcpToolIds: string[] | null;
 }
 
 const initialState: ChatState = {
   sessionId: uuidv4(),
   messages: [],
   isLoading: false,
+  enabledAgentIds: null,
+  enabledMcpToolIds: null,
 };
 
 const chatSlice = createSlice({
@@ -24,6 +28,12 @@ const chatSlice = createSlice({
     setLoading(state, action: PayloadAction<boolean>) {
       state.isLoading = action.payload;
     },
+    setEnabledAgentIds(state, action: PayloadAction<string[] | null>) {
+      state.enabledAgentIds = action.payload;
+    },
+    setEnabledMcpToolIds(state, action: PayloadAction<string[] | null>) {
+      state.enabledMcpToolIds = action.payload;
+    },
     clearMessages(state) {
       state.messages = [];
       state.sessionId = uuidv4();
@@ -31,5 +41,11 @@ const chatSlice = createSlice({
   },
 });
 
-export const { addMessage, setLoading, clearMessages } = chatSlice.actions;
+export const {
+  addMessage,
+  setLoading,
+  setEnabledAgentIds,
+  setEnabledMcpToolIds,
+  clearMessages,
+} = chatSlice.actions;
 export default chatSlice.reducer;

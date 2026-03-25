@@ -18,6 +18,39 @@ from app.utils.logging import logger
 router = APIRouter()
 
 
+def _extract_uuid_filter(metadata: dict | None, key: str) -> set[uuid.UUID] | None:
+    """Extract a UUID allowlist from request metadata.
+
+    Returns None when the key is absent (meaning no filtering for that key).
+    Returns an empty set when the key is present with an empty list
+    (meaning explicitly disable all items for that key).
+    """
+    if not metadata or key not in metadata:
+        return None
+
+    raw_values = metadata.get(key)
+    if raw_values is None:
+        return None
+    if not isinstance(raw_values, list):
+        logger.warning(
+            "Ignoring invalid metadata filter type",
+            key=key,
+            value_type=type(raw_values).__name__,
+        )
+        return None
+
+    values: set[uuid.UUID] = set()
+    for raw in raw_values:
+        if not isinstance(raw, str):
+            continue
+        try:
+            values.add(uuid.UUID(raw))
+        except ValueError:
+            logger.warning("Ignoring invalid UUID in metadata filter", key=key, value=raw)
+
+    return values
+
+
 def _agent_to_config(agent) -> dict:
     """Convert an Agent ORM model to a config dict for the adapter."""
     return {
@@ -89,6 +122,15 @@ async def chat(
         user_agents = await get_user_agents(db, user_id_uuid, include_installed=True)
         user_mcp_tools = await get_user_mcp_tools(db, user_id_uuid)
 
+        metadata = request.content.metadata if isinstance(request.content.metadata, dict) else {}
+        enabled_agent_ids = _extract_uuid_filter(metadata, "enabled_agent_ids")
+        enabled_mcp_tool_ids = _extract_uuid_filter(metadata, "enabled_mcp_tool_ids")
+
+        if enabled_agent_ids is not None:
+            user_agents = [a for a in user_agents if a.id in enabled_agent_ids]
+        if enabled_mcp_tool_ids is not None:
+            user_mcp_tools = [t for t in user_mcp_tools if t.id in enabled_mcp_tool_ids]
+
         # Convert to config dicts for adapters
         agent_configs = [_agent_to_config(a) for a in user_agents] if user_agents else None
         mcp_tool_configs = [_mcp_tool_to_config(t) for t in user_mcp_tools] if user_mcp_tools else None
@@ -118,7 +160,7 @@ async def chat(
     except PermissionError as e:
         raise HTTPException(status_code=403, detail=str(e))
     except Exception as e:
-        logger.error(f"Error processing chat message: {e}")
+        logger.error(error=e, message="Error processing chat message")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -147,4 +189,5 @@ async def get_session_info(
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(error=e, message="Error retrieving session info")
         raise HTTPException(status_code=500, detail=str(e))

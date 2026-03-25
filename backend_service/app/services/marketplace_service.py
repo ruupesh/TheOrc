@@ -226,3 +226,30 @@ async def get_user_installations(
         .where(UserAgentInstallation.user_id == user_id)
     )
     return list(result.scalars().all())
+
+
+async def remove_listing(
+    db: AsyncSession, publisher_id: uuid.UUID, listing_id: uuid.UUID
+) -> bool:
+    """Remove a marketplace listing owned by the publisher.
+
+    Returns False when the listing does not exist or is not owned by the user.
+    """
+    result = await db.execute(
+        select(MarketplaceListing).where(
+            MarketplaceListing.id == listing_id,
+            MarketplaceListing.publisher_id == publisher_id,
+        )
+    )
+    listing = result.scalar_one_or_none()
+    if not listing:
+        return False
+
+    await db.delete(listing)
+    await db.commit()
+    logger.info(
+        "Marketplace listing removed",
+        publisher_id=str(publisher_id),
+        listing_id=str(listing_id),
+    )
+    return True

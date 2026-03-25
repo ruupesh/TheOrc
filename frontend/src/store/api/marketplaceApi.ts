@@ -54,6 +54,13 @@ export const marketplaceApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Installations", "Agents"],
     }),
+    removeMarketplaceListing: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/marketplace/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Marketplace", "Installations", "Agents", "McpTools"],
+    }),
   }),
 });
 
@@ -64,4 +71,5 @@ export const {
   useInstallAgentMutation,
   useGetMyInstallationsQuery,
   useUninstallAgentMutation,
+  useRemoveMarketplaceListingMutation,
 } = marketplaceApi;

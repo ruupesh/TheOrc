@@ -14,6 +14,7 @@ import Box from "@mui/material/Box";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
 import CircularProgress from "@mui/material/CircularProgress";
+import Typography from "@mui/material/Typography";
 import type { Agent } from "@/lib/types";
 import {
   useCreateAgentMutation,
@@ -173,30 +174,45 @@ export default function AgentForm({ open, agent, onClose }: AgentFormProps) {
               name="full_history"
               control={control}
               render={({ field }) => (
-                <FormControlLabel
-                  control={<Switch checked={field.value} onChange={field.onChange} />}
-                  label="Full History"
-                />
+                <Box sx={{ display: "flex", flexDirection: "column", minWidth: 180 }}>
+                  <FormControlLabel
+                    control={<Switch checked={field.value} onChange={field.onChange} />}
+                    label="Full History"
+                  />
+                  <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                    Sends full prior context for stateless remote runs.
+                  </Typography>
+                </Box>
               )}
             />
             <Controller
               name="authentication_flag"
               control={control}
               render={({ field }) => (
-                <FormControlLabel
-                  control={<Switch checked={field.value} onChange={field.onChange} />}
-                  label="Auth Required"
-                />
+                <Box sx={{ display: "flex", flexDirection: "column", minWidth: 180 }}>
+                  <FormControlLabel
+                    control={<Switch checked={field.value} onChange={field.onChange} />}
+                    label="Auth Required"
+                  />
+                  <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                    Adds bearer auth when calling this agent.
+                  </Typography>
+                </Box>
               )}
             />
             <Controller
               name="allow_conversation_history"
               control={control}
               render={({ field }) => (
-                <FormControlLabel
-                  control={<Switch checked={field.value} onChange={field.onChange} />}
-                  label="Allow History"
-                />
+                <Box sx={{ display: "flex", flexDirection: "column", minWidth: 180 }}>
+                  <FormControlLabel
+                    control={<Switch checked={field.value} onChange={field.onChange} />}
+                    label="Allow History"
+                  />
+                  <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                    Forwards conversation history in A2A metadata.
+                  </Typography>
+                </Box>
               )}
             />
           </Box>

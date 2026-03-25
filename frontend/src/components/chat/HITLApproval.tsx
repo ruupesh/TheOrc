@@ -19,9 +19,22 @@ interface HITLApprovalProps {
 
 export default function HITLApproval({ items }: HITLApprovalProps) {
   const dispatch = useAppDispatch();
-  const { sessionId } = useAppSelector((state) => state.chat);
+  const { sessionId, enabledAgentIds, enabledMcpToolIds } = useAppSelector(
+    (state) => state.chat
+  );
   const [sendMessage] = useSendMessageMutation();
   const { data: user } = useGetMeQuery();
+
+  const buildMetadata = () => {
+    const metadata: Record<string, unknown> = {};
+    if (enabledAgentIds !== null) {
+      metadata.enabled_agent_ids = enabledAgentIds;
+    }
+    if (enabledMcpToolIds !== null) {
+      metadata.enabled_mcp_tool_ids = enabledMcpToolIds;
+    }
+    return Object.keys(metadata).length > 0 ? metadata : undefined;
+  };
 
   const handleApproval = async (
     item: HITLRequestedItem,
@@ -40,10 +53,12 @@ export default function HITLApproval({ items }: HITLApprovalProps) {
     dispatch(setLoading(true));
 
     try {
+      const metadata = buildMetadata();
       const response = await sendMessage({
         user_id: user.id,
         session_id: sessionId,
         content: {
+          ...(metadata ? { metadata } : {}),
           hitl_approval: [
             {
               function_id: item.function_id,

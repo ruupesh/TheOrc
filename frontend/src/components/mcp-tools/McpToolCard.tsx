@@ -20,12 +20,14 @@ interface McpToolCardProps {
   tool: McpTool;
   onEdit: (tool: McpTool) => void;
   onDelete: (tool: McpTool) => void;
+  canManage?: boolean;
 }
 
 export default function McpToolCard({
   tool,
   onEdit,
   onDelete,
+  canManage = false,
 }: McpToolCardProps) {
   return (
     <Card>
@@ -54,7 +56,7 @@ export default function McpToolCard({
               variant="outlined"
             />
           </Box>
-          {!tool.is_system && (
+          {canManage && !tool.is_system && (
             <Box sx={{ display: "flex", gap: 0.5, ml: 1 }}>
               <IconButton size="small" onClick={() => onEdit(tool)}>
                 <EditIcon fontSize="small" />

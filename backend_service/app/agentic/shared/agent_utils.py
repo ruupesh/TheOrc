@@ -91,13 +91,13 @@ def _find_latest_event_payload(
     return None
 
 
-def _get_reasoning_effort() -> str:
-    return os.getenv("AGENT_REASONING_EFFORT", "low").lower()
+def _get_reasoning_effort() -> str | None:
+    return os.getenv("AGENT_REASONING_EFFORT", None)
 
 
-def _get_thinking_level() -> types.ThinkingLevel:
-    level = os.getenv("AGENT_THINKING_LEVEL", "low").upper()
-    return getattr(types.ThinkingLevel, level, types.ThinkingLevel.MEDIUM)
+def _get_thinking_level() -> types.ThinkingLevel | None:
+    level = os.getenv("AGENT_THINKING_LEVEL", None)
+    return getattr(types.ThinkingLevel, level, types.ThinkingLevel.MEDIUM) if level is not None else types.ThinkingLevel.MEDIUM
 
 
 def _get_include_thoughts() -> bool:

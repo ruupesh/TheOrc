@@ -154,10 +154,10 @@ class RemoteA2aAdapter:
         for cfg in self._configs:
             agent = self._build_remote_agent(cfg)
             logger.info(
-                "Created RemoteA2aAgent '%s' -> %s (auth=%s)",
-                cfg.name,
-                cfg.agent_card_url,
-                cfg.authentication_flag,
+                "Created RemoteA2aAgent",
+                name=cfg.name,
+                agent_card_url=cfg.agent_card_url,
+                authentication_required=cfg.authentication_flag,
             )
             agents.append(agent)
 

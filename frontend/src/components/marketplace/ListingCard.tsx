@@ -12,6 +12,7 @@ import PublicIcon from "@mui/icons-material/PublicOutlined";
 import type { MarketplaceListing, Installation } from "@/lib/types";
 import {
   useInstallAgentMutation,
+  useRemoveMarketplaceListingMutation,
   useUninstallAgentMutation,
 } from "@/store/api/marketplaceApi";
 import { useSnackbar } from "notistack";
@@ -19,23 +20,45 @@ import { useSnackbar } from "notistack";
 interface ListingCardProps {
   listing: MarketplaceListing;
   installations: Installation[];
+  currentUserId?: string;
 }
 
 export default function ListingCard({
   listing,
   installations,
+  currentUserId,
 }: ListingCardProps) {
   const { enqueueSnackbar } = useSnackbar();
   const [installAgent, { isLoading: isInstalling }] = useInstallAgentMutation();
+  const [removeListing, { isLoading: isRemoving }] =
+    useRemoveMarketplaceListingMutation();
   const [uninstallAgent, { isLoading: isUninstalling }] = useUninstallAgentMutation();
 
-  const installation = installations.find((i) => i.listing_id === listing.id);
+  const isOwnListing =
+    !!currentUserId && String(listing.publisher_id) === String(currentUserId);
+  const installation = installations.find(
+    (i) => String(i.listing_id) === String(listing.id)
+  );
   const isInstalled = !!installation;
-  const isBusy = isInstalling || isUninstalling;
+  const isBusy = isInstalling || isUninstalling || isRemoving;
   const isAgent = listing.item_type === "agent";
   const itemName = isAgent ? listing.agent_name : listing.mcp_tool_name;
 
+  const handleRemove = async () => {
+    try {
+      await removeListing(listing.id).unwrap();
+      enqueueSnackbar("Removed from marketplace", { variant: "success" });
+    } catch {
+      enqueueSnackbar("Failed to remove listing", { variant: "error" });
+    }
+  };
+
   const handleToggle = async () => {
+    if (isOwnListing) {
+      enqueueSnackbar("You cannot install your own listing", { variant: "info" });
+      return;
+    }
+
     try {
       if (isInstalled && installation) {
         await uninstallAgent(installation.id).unwrap();
@@ -72,14 +95,16 @@ export default function ListingCard({
           </Box>
           <Button
             size="small"
-            variant={isInstalled ? "outlined" : "contained"}
-            color={isInstalled ? "error" : "primary"}
-            onClick={handleToggle}
+            variant={isOwnListing || isInstalled ? "outlined" : "contained"}
+            color={isOwnListing ? "warning" : isInstalled ? "error" : "primary"}
+            onClick={isOwnListing ? handleRemove : handleToggle}
             disabled={isBusy}
             sx={{ minWidth: 90, ml: 1 }}
           >
             {isBusy ? (
               <CircularProgress size={18} />
+            ) : isOwnListing ? (
+              "Remove"
             ) : isInstalled ? (
               "Uninstall"
             ) : (
