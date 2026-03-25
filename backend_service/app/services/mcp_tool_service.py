@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.mcp_tool import McpTool
-from app.models.marketplace import UserAgentInstallation, MarketplaceListing
+from app.models.marketplace import MarketplaceListing
 from app.models.schemas.mcp_tool_schema import McpToolCreate, McpToolUpdate
 from app.utils.logging import logger
 
@@ -32,7 +32,7 @@ async def get_user_mcp_tools(
     Includes:
     - user-owned MCP tools
     - MCP tools from listings published by the current user
-    - optionally MCP tools installed from the marketplace
+    - installed marketplace MCP tools are represented as user-owned cloned tools
     """
     result = await db.execute(
         select(McpTool).where(McpTool.owner_id == user_id)
@@ -57,26 +57,34 @@ async def get_user_mcp_tools(
             tools.append(tool)
             existing_ids.add(tool.id)
 
-    if include_installed:
-        result = await db.execute(
-            select(McpTool)
-            .join(MarketplaceListing, MarketplaceListing.mcp_tool_id == McpTool.id)
-            .join(
-                UserAgentInstallation,
-                UserAgentInstallation.listing_id == MarketplaceListing.id,
-            )
-            .where(
-                UserAgentInstallation.user_id == user_id,
-                MarketplaceListing.is_published == True,
-            )
-        )
-        installed_tools = list(result.scalars().all())
-        for tool in installed_tools:
-            if tool.id not in existing_ids:
-                tools.append(tool)
-                existing_ids.add(tool.id)
+    if not include_installed:
+        tools = [t for t in tools if t.installed_from_listing_id is None]
 
     return tools
+
+
+async def get_user_mcp_tool_by_id(
+    db: AsyncSession, user_id: uuid.UUID, tool_id: uuid.UUID
+) -> Optional[McpTool]:
+    """Get a single MCP tool by ID only if it is accessible to the user."""
+    result = await db.execute(
+        select(McpTool).where(McpTool.id == tool_id, McpTool.owner_id == user_id)
+    )
+    tool = result.scalar_one_or_none()
+    if tool:
+        return tool
+
+    # Backward compatibility: allow reading tools from listings published by this user
+    result = await db.execute(
+        select(McpTool)
+        .join(MarketplaceListing, MarketplaceListing.mcp_tool_id == McpTool.id)
+        .where(
+            McpTool.id == tool_id,
+            MarketplaceListing.publisher_id == user_id,
+            MarketplaceListing.is_published == True,
+        )
+    )
+    return result.scalar_one_or_none()
 
 
 async def get_mcp_tool_by_id(

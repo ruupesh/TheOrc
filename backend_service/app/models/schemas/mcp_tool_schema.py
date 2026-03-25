@@ -49,6 +49,7 @@ class McpToolResponse(BaseModel):
     """Response schema for an MCP tool."""
     id: uuid.UUID
     owner_id: uuid.UUID
+    installed_from_listing_id: Optional[uuid.UUID] = None
     name: str
     connection_type: str
     command: Optional[str] = None

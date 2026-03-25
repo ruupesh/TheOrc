@@ -64,6 +64,8 @@ class RootAgent:
     ) -> None:
         self._auth_token = auth_token
         self._request = request
+        self._db_agent_override_supplied = db_agent_configs is not None
+        self._db_mcp_override_supplied = db_mcp_tool_configs is not None
 
         # Build remote agents from DB configs if provided, otherwise from YAML
         if db_agent_configs is not None:
@@ -88,12 +90,17 @@ class RootAgent:
             agent.name: agent for agent in self.remote_a2a_adapter.get_remote_agents()
         }
 
-        # Pre-build available MCP toolsets as a name → toolset lookup
-        self._all_mcp_toolsets: dict[str, Any] = (
-            self.mcp_adapter.get_mcp_tool_sets_by_name()
-            if ENABLE_DIRECT_MCP_TOOLS
-            else {}
-        )
+        # Pre-build available MCP toolsets as a name → toolset lookup.
+        # If explicit DB configs are provided (including []), honor them
+        # regardless of global defaults so per-chat user selection is respected.
+        if db_mcp_tool_configs is not None:
+            self._all_mcp_toolsets = self.mcp_adapter.get_mcp_tool_sets_by_name()
+        else:
+            self._all_mcp_toolsets = (
+                self.mcp_adapter.get_mcp_tool_sets_by_name()
+                if ENABLE_DIRECT_MCP_TOOLS
+                else {}
+            )
 
         self.root_agent = self.get_root_agent()
 
@@ -374,6 +381,9 @@ class RootAgent:
             available_agents=list(self._all_remote_agents.keys()),
             num_available_mcp_tools=len(self._all_mcp_toolsets),
             available_mcp_tools=list(self._all_mcp_toolsets.keys()),
+            direct_mcp_env_enabled=ENABLE_DIRECT_MCP_TOOLS,
+            db_agent_override_supplied=self._db_agent_override_supplied,
+            db_mcp_override_supplied=self._db_mcp_override_supplied,
         )
 
         return root_agent

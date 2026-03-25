@@ -120,6 +120,7 @@ export interface AgentUpdate {
 export interface McpTool {
   id: string;
   owner_id: string;
+  installed_from_listing_id?: string;
   name: string;
   connection_type: string;
   command?: string;

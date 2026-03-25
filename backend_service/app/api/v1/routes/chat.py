@@ -131,9 +131,20 @@ async def chat(
         if enabled_mcp_tool_ids is not None:
             user_mcp_tools = [t for t in user_mcp_tools if t.id in enabled_mcp_tool_ids]
 
-        # Convert to config dicts for adapters
-        agent_configs = [_agent_to_config(a) for a in user_agents] if user_agents else None
-        mcp_tool_configs = [_mcp_tool_to_config(t) for t in user_mcp_tools] if user_mcp_tools else None
+        # Convert to config dicts for adapters.
+        # IMPORTANT: keep explicit empty selections as [] (not None), otherwise
+        # downstream code interprets None as "use YAML defaults" and disabled
+        # items can be unintentionally re-enabled.
+        agent_configs = [_agent_to_config(a) for a in user_agents]
+        mcp_tool_configs = [_mcp_tool_to_config(t) for t in user_mcp_tools]
+
+        logger.info(
+            "Resolved chat capability filters",
+            total_agents=len(user_agents),
+            total_mcp_tools=len(user_mcp_tools),
+            has_agent_filter=enabled_agent_ids is not None,
+            has_mcp_filter=enabled_mcp_tool_ids is not None,
+        )
 
         session = await session_service.get_session(
             app_name="orchestrator_api", user_id=user_id, session_id=session_id

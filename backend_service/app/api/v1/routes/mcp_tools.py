@@ -43,7 +43,8 @@ async def get_mcp_tool(
     db: AsyncSession = Depends(get_db),
 ) -> McpToolResponse:
     """Get MCP tool details by ID."""
-    tool = await mcp_tool_service.get_mcp_tool_by_id(db, tool_id)
+    user_id = uuid.UUID(current_user["user_id"])
+    tool = await mcp_tool_service.get_user_mcp_tool_by_id(db, user_id, tool_id)
     if not tool:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="MCP tool not found")
     return McpToolResponse.model_validate(tool)

@@ -94,7 +94,7 @@ async def main() -> None:
 
     await engine.dispose()
     print("[3/3] Done.")
-    print("Next: run `python -m scripts.seed_agent_listings`")
+    print("Next: run `python -m scripts.seed_agents_and_market`")
 
 
 if __name__ == "__main__":

@@ -38,7 +38,12 @@ class MarketplaceListing(Base):
 
     # Relationships
     agent = relationship("Agent", back_populates="marketplace_listing", lazy="selectin")
-    mcp_tool = relationship("McpTool", back_populates="marketplace_listing", lazy="selectin")
+    mcp_tool = relationship(
+        "McpTool",
+        back_populates="marketplace_listing",
+        foreign_keys=[mcp_tool_id],
+        lazy="selectin",
+    )
     publisher = relationship("User", back_populates="marketplace_listings")
     installations = relationship(
         "UserAgentInstallation", back_populates="listing", lazy="selectin"

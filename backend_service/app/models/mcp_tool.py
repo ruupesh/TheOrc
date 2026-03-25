@@ -20,6 +20,12 @@ class McpTool(Base):
     owner_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
+    installed_from_listing_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("marketplace_listings.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     connection_type: Mapped[str] = mapped_column(String(50), nullable=False)  # stdio | streamable_http | sse
 
@@ -46,7 +52,18 @@ class McpTool(Base):
 
     # Relationships
     owner = relationship("User", back_populates="mcp_tools")
-    marketplace_listing = relationship("MarketplaceListing", back_populates="mcp_tool", uselist=False, lazy="selectin")
+    marketplace_listing = relationship(
+        "MarketplaceListing",
+        back_populates="mcp_tool",
+        foreign_keys="MarketplaceListing.mcp_tool_id",
+        uselist=False,
+        lazy="selectin",
+    )
+    installed_from_listing = relationship(
+        "MarketplaceListing",
+        foreign_keys=[installed_from_listing_id],
+        lazy="selectin",
+    )
 
     def __repr__(self) -> str:
         return f"<McpTool {self.name} ({self.connection_type})>"

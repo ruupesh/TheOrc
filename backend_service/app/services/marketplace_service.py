@@ -1,5 +1,6 @@
 """Marketplace service — publish, browse, install, and uninstall agents and MCP tools."""
 
+from copy import deepcopy
 import uuid
 from typing import Optional
 
@@ -11,6 +12,31 @@ from app.models.agent import Agent
 from app.models.mcp_tool import McpTool
 from app.models.marketplace import MarketplaceListing, UserAgentInstallation
 from app.utils.logging import logger
+
+
+def _clone_mcp_tool_for_user(
+    source_tool: McpTool,
+    installing_user_id: uuid.UUID,
+    listing_id: uuid.UUID,
+) -> McpTool:
+    """Create a user-owned MCP tool copy from a marketplace listing source tool."""
+    return McpTool(
+        owner_id=installing_user_id,
+        installed_from_listing_id=listing_id,
+        name=source_tool.name,
+        connection_type=source_tool.connection_type,
+        command=source_tool.command,
+        args=deepcopy(source_tool.args),
+        env=deepcopy(source_tool.env),
+        url=source_tool.url,
+        headers=deepcopy(source_tool.headers),
+        sse_read_timeout=source_tool.sse_read_timeout,
+        timeout=source_tool.timeout,
+        authentication_flag=source_tool.authentication_flag,
+        auth_token=None,
+        tool_filter=deepcopy(source_tool.tool_filter),
+        is_system=False,
+    )
 
 
 async def publish_item(
@@ -159,9 +185,9 @@ async def install_agent(
     if not listing:
         raise ValueError("Marketplace listing not found or not published")
 
-    # Prevent self-install (user can't install their own agent)
+    # Prevent self-install
     if listing.publisher_id == user_id:
-        raise ValueError("You cannot install your own agent")
+        raise ValueError("You cannot install your own listing")
 
     # Check if already installed
     result = await db.execute(
@@ -172,6 +198,24 @@ async def install_agent(
     )
     if result.scalar_one_or_none():
         raise ValueError("Agent is already installed")
+
+    if listing.item_type == "mcp_tool":
+        if not listing.mcp_tool_id:
+            raise ValueError("Invalid MCP tool listing")
+
+        source_result = await db.execute(
+            select(McpTool).where(McpTool.id == listing.mcp_tool_id)
+        )
+        source_tool = source_result.scalar_one_or_none()
+        if not source_tool:
+            raise ValueError("Source MCP tool for listing not found")
+
+        installed_copy = _clone_mcp_tool_for_user(
+            source_tool=source_tool,
+            installing_user_id=user_id,
+            listing_id=listing.id,
+        )
+        db.add(installed_copy)
 
     installation = UserAgentInstallation(
         user_id=user_id,
@@ -201,6 +245,22 @@ async def uninstall_agent(
     installation = result.scalar_one_or_none()
     if not installation:
         return False
+
+    listing_result = await db.execute(
+        select(MarketplaceListing).where(MarketplaceListing.id == installation.listing_id)
+    )
+    listing = listing_result.scalar_one_or_none()
+
+    if listing and listing.item_type == "mcp_tool":
+        installed_tools_result = await db.execute(
+            select(McpTool).where(
+                McpTool.owner_id == user_id,
+                McpTool.installed_from_listing_id == listing.id,
+            )
+        )
+        installed_tools = list(installed_tools_result.scalars().all())
+        for tool in installed_tools:
+            await db.delete(tool)
 
     await db.delete(installation)
     await db.commit()

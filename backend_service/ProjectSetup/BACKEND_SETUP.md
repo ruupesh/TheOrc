@@ -39,7 +39,7 @@ SECRET_KEY=replace-with-a-strong-secret
 Common optional variables:
 
 ```env
-AGENT_MODEL=gemini/gemini-2.5-pro
+AGENT_MODEL=gemini/gemini-3.1-flash-preview
 AGENT_REASONING_EFFORT=medium
 AGENT_THINKING_LEVEL=medium
 AGENT_INCLUDE_THOUGHTS=false
@@ -60,12 +60,14 @@ Notes:
 Run the initialization script once after the database is available:
 
 ```powershell
+alembic upgrade head
 python -m scripts.init_db
 ```
 
 What this does:
 
 - Creates database tables
+- Applies schema migrations
 - Creates the system user
 - Seeds system agents from `app/agentic/adapters/remote_agents_conf.yml`
 - Seeds system MCP tools from `app/agentic/adapters/mcp_conf.yml`

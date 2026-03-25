@@ -54,10 +54,10 @@ export default function McpToolsPage() {
   const filteredTools = useMemo(() => {
     const normalizedSearch = searchInput.trim().toLowerCase();
     const rows = (tools || []).filter((tool) => {
-      const isOwn = !!currentUserId && String(tool.owner_id) === currentUserId;
+      const isInstalled = !!tool.installed_from_listing_id;
 
-      if (ownershipFilter === "owned" && !isOwn) return false;
-      if (ownershipFilter === "installed" && isOwn) return false;
+      if (ownershipFilter === "owned" && isInstalled) return false;
+      if (ownershipFilter === "installed" && !isInstalled) return false;
 
       if (connectionFilter !== "all" && tool.connection_type !== connectionFilter) {
         return false;
