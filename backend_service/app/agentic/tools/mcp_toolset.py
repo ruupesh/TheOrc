@@ -87,7 +87,7 @@ memory_toolset = McpToolset(
             command="npx",
             args=["-y", "@modelcontextprotocol/server-memory"],
             env={
-                "MEMORY_FILE_PATH": "D:/projects/TheOrchestrator/backend_service/conversation_logs/memory.jsonl",
+                "MEMORY_FILE_PATH": "D:/projects/TheOrc/backend_service/conversation_logs/memory.jsonl",
             },
         ),
         timeout=300.0,

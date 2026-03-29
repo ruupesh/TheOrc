@@ -44,7 +44,7 @@ export default function ChatWindow() {
             Start a conversation
           </Typography>
           <Typography variant="body2" sx={{ opacity: 0.4 }}>
-            Ask TheOrchestrator anything — it will route to the right agent.
+            Ask TheOrc anything — it will route to the right agent.
           </Typography>
         </Box>
       )}

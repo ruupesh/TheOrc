@@ -49,7 +49,7 @@ export default function LoginPage() {
     <Card sx={{ width: "100%", maxWidth: 420, mx: 2 }}>
       <CardContent sx={{ p: 4 }}>
         <Typography variant="h5" sx={{ mb: 1, textAlign: "center" }}>
-          TheOrchestrator
+          TheOrc
         </Typography>
         <Typography
           variant="body2"

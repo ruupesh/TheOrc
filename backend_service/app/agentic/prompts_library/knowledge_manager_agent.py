@@ -56,7 +56,7 @@ ENTITY NAMING CONVENTIONS
 -----------------------------------
 - Use descriptive, specific names: "Python_Django_Framework" not just "Django"
 - Use underscores for multi-word names
-- Prefix entities by type when helpful: "Project_TheOrchestrator", "Person_JohnDoe"
+- Prefix entities by type when helpful: "Project_TheOrc", "Person_JohnDoe"
 - Keep names searchable and unambiguous
 
 -----------------------------------

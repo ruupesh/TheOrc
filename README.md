@@ -1,6 +1,6 @@
-﻿# MultiAgentIntegration App
+﻿# TheOrc
 
-MultiAgentIntegration App is a full-stack AI orchestration platform that turns a single user request into a routed execution plan across specialist agents, MCP toolsets, and user-governed capability catalogs.
+TheOrc is a full-stack AI orchestration platform that turns a single user request into a routed execution plan across specialist agents, MCP toolsets, and user-governed capability catalogs.
 
 - Two-stage runtime: a discovery agent decides how work should be executed, and a separate orchestrator executes that plan.
 - Hybrid execution model: one request can use remote A2A agents, direct MCP tools, or both.
@@ -8,7 +8,7 @@ MultiAgentIntegration App is a full-stack AI orchestration platform that turns a
 - Stateful conversations: Redis-backed ADK sessions preserve routing state, conversation history, HITL checkpoints, and resumability.
 - Distribution built in: agents and MCP tools are persisted in PostgreSQL and can be published, installed, and customized through a marketplace workflow.
 
-![MultiAgentIntegration App Architecture](backend_service/documentation/MultiAgentSystem.png)
+![TheOrc MultiAgentic Architecture](backend_service/documentation/MultiAgentSystem.png)
 
 ## AI Runtime Architecture
 
@@ -289,7 +289,7 @@ These allow the frontend to narrow the execution catalog for a single conversati
 ## Repository Structure
 
 ```text
-MultiAgentIntegration App/
+TheOrc/
 |-- backend_service/
 |   |-- app/
 |   |   |-- api/v1/routes/      # auth, chat, agents, MCP tools, marketplace
@@ -414,7 +414,7 @@ http://localhost:3000
 
 ## Why This Architecture Is Useful
 
-MultiAgentIntegration App is interesting because it treats AI execution as a runtime system, not as a single prompt surface.
+TheOrc is interesting because it treats AI execution as a runtime system, not as a single prompt surface.
 
 - planning is explicit
 - execution is dynamically composed

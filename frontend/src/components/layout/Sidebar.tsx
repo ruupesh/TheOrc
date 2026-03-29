@@ -72,7 +72,7 @@ export default function Sidebar() {
           O
         </Box>
         <Typography variant="h6" sx={{ fontSize: 16 }}>
-          TheOrchestrator
+          TheOrc
         </Typography>
       </Box>
 

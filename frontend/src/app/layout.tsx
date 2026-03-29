@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TheOrchestrator",
+  title: "TheOrc",
   description: "AI Agent Orchestration Platform",
 };
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Run the TheOrchestrator FastAPI server.
+Run the TheOrc FastAPI server.
 
 This script starts the Uvicorn server on localhost:8000 with auto-reload enabled.
 Make sure to activate the virtual environment first:

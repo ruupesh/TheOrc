@@ -1,4 +1,4 @@
-const TOKEN_STORAGE_KEY = "theorchestrator_access_token";
+const TOKEN_STORAGE_KEY = "TheOrc_access_token";
 
 let token: string | null = null;
 

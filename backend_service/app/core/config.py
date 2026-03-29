@@ -7,7 +7,7 @@ ROOT_ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
 
 
 class Settings(BaseSettings):
-    APP_NAME: str = "TheOrchestrator"
+    APP_NAME: str = "TheOrc"
     API_V1_PREFIX: str = "/api/v1"
     DEBUG: bool = True
     AGENT_MODEL: str | None = None

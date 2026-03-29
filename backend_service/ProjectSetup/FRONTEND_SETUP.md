@@ -10,11 +10,11 @@ Install the following first:
 - npm
 - The backend API running on `http://localhost:8000`
 
-Backend setup is documented in [BACKEND_SETUP.md](d:/projects/TheOrchestrator/backend_service/ProjectSetup/BACKEND_SETUP.md).
+Backend setup is documented in [BACKEND_SETUP.md](d:/projects/TheOrc/backend_service/ProjectSetup/BACKEND_SETUP.md).
 
 ## 2. Install Dependencies
 
-From [frontend](d:/projects/TheOrchestrator/frontend):
+From [frontend](d:/projects/TheOrc/frontend):
 
 ```powershell
 npm install
@@ -22,7 +22,7 @@ npm install
 
 ## 3. Configure Environment Variables
 
-Create or update `.env.local` in [frontend](d:/projects/TheOrchestrator/frontend):
+Create or update `.env.local` in [frontend](d:/projects/TheOrc/frontend):
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
@@ -32,7 +32,7 @@ This is the base URL used by the UI for all backend API calls.
 
 ## 4. Start the Development Server
 
-From [frontend](d:/projects/TheOrchestrator/frontend):
+From [frontend](d:/projects/TheOrc/frontend):
 
 ```powershell
 npm run dev

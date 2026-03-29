@@ -1,12 +1,12 @@
 # Project Setup Docs
 
-This folder contains local setup guides for TheOrchestrator.
+This folder contains local setup guides for TheOrc.
 
 Available guides:
 
-- [POSTGRES_SETUP.md](d:/projects/TheOrchestrator/backend_service/ProjectSetup/POSTGRES_SETUP.md): Run PostgreSQL locally with Docker.
-- [BACKEND_SETUP.md](d:/projects/TheOrchestrator/backend_service/ProjectSetup/BACKEND_SETUP.md): Set up the FastAPI backend, database bootstrap, and multi-agent services.
-- [FRONTEND_SETUP.md](d:/projects/TheOrchestrator/backend_service/ProjectSetup/FRONTEND_SETUP.md): Set up and run the Next.js UI.
+- [POSTGRES_SETUP.md](d:/projects/TheOrc/backend_service/ProjectSetup/POSTGRES_SETUP.md): Run PostgreSQL locally with Docker.
+- [BACKEND_SETUP.md](d:/projects/TheOrc/backend_service/ProjectSetup/BACKEND_SETUP.md): Set up the FastAPI backend, database bootstrap, and multi-agent services.
+- [FRONTEND_SETUP.md](d:/projects/TheOrc/backend_service/ProjectSetup/FRONTEND_SETUP.md): Set up and run the Next.js UI.
 
 Recommended order:
 

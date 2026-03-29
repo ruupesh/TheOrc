@@ -1,8 +1,8 @@
 {
 	"info": {
 		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-		"name": "TheOrchestrator API",
-		"description": "Complete API collection for TheOrchestrator — Agentic Marketplace.\n\n**Setup:**\n1. Register a user via Auth > Register\n2. Login via Auth > Login (token auto-saved)\n3. All other requests use the saved token automatically\n\n**Variables:**\n- `base_url`: http://localhost:8000/api/v1\n- `token`: Auto-populated after login",
+		"name": "TheOrc API",
+		"description": "Complete API collection for TheOrc — Agentic Marketplace.\n\n**Setup:**\n1. Register a user via Auth > Register\n2. Login via Auth > Login (token auto-saved)\n3. All other requests use the saved token automatically\n\n**Variables:**\n- `base_url`: http://localhost:8000/api/v1\n- `token`: Auto-populated after login",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"variable": [

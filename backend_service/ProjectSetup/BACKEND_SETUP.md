@@ -1,6 +1,6 @@
 # Backend Setup
 
-This guide covers local setup for the FastAPI backend and the remote agent services used by TheOrchestrator.
+This guide covers local setup for the FastAPI backend and the remote agent services used by TheOrc.
 
 ## 1. Prerequisites
 
@@ -11,11 +11,11 @@ Install the following first:
 - Windows PowerShell
 - Windows Terminal (`wt.exe`) if you want to launch all agents with the provided script
 
-Database setup is documented in [POSTGRES_SETUP.md](d:/projects/TheOrchestrator/backend_service/ProjectSetup/POSTGRES_SETUP.md).
+Database setup is documented in [POSTGRES_SETUP.md](d:/projects/TheOrc/backend_service/ProjectSetup/POSTGRES_SETUP.md).
 
 ## 2. Create and Activate a Virtual Environment
 
-From [backend_service](d:/projects/TheOrchestrator/backend_service):
+From [backend_service](d:/projects/TheOrc/backend_service):
 
 ```powershell
 py -3.11 -m venv venv
@@ -26,7 +26,7 @@ pip install -r requirements.txt
 
 ## 3. Configure Environment Variables
 
-Create a `.env` file in [backend_service](d:/projects/TheOrchestrator/backend_service).
+Create a `.env` file in [backend_service](d:/projects/TheOrc/backend_service).
 
 Minimum variables:
 
@@ -83,7 +83,7 @@ Use these only if you want sample marketplace listings for demo or UI testing.
 
 ## 5. Start the Main API Only
 
-From [backend_service](d:/projects/TheOrchestrator/backend_service):
+From [backend_service](d:/projects/TheOrc/backend_service):
 
 ```powershell
 .\venv\Scripts\Activate.ps1
@@ -142,7 +142,7 @@ Quick checks:
 
 1. Open `http://127.0.0.1:8000/docs`.
 2. Register a user and log in.
-3. Import [TheOrchestrator.postman_collection.json](d:/projects/TheOrchestrator/backend_service/TheOrchestrator.postman_collection.json) into Postman if you want a ready-made API collection.
+3. Import [TheOrc.postman_collection.json](d:/projects/TheOrc/backend_service/TheOrc.postman_collection.json) into Postman if you want a ready-made API collection.
 4. Open the frontend after it is configured and verify login, marketplace, and chat.
 
 ## 8. Troubleshooting
@@ -157,7 +157,7 @@ Quick checks:
 
 - Make sure the virtual environment is activated.
 - Re-run `pip install -r requirements.txt`.
-- Start commands from [backend_service](d:/projects/TheOrchestrator/backend_service), not from another directory.
+- Start commands from [backend_service](d:/projects/TheOrc/backend_service), not from another directory.
 
 ### Remote agent `401 Unauthorized`
 

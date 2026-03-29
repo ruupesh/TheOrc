@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Start all TheOrchestrator agents and the main API server in separate Windows Terminal tabs.
+    Start all TheOrc agents and the main API server in separate Windows Terminal tabs.
 
 .DESCRIPTION
     Opens 12 tabs in the current Windows Terminal window:
@@ -19,12 +19,12 @@
 
 .NOTES
     Requires Windows Terminal (wt.exe).
-    Run this script from the project root: D:\projects\TheOrchestrator\backend_service
+    Run this script from the project root: D:\projects\TheOrc\backend_service
 #>
 
 $ErrorActionPreference = "Stop"
 
-$ProjectRoot = "D:\projects\TheOrchestrator\backend_service"
+$ProjectRoot = "D:\projects\TheOrc\backend_service"
 $HelperScript = Join-Path $PSScriptRoot "start_one_service.ps1"
 
 if (-not (Get-Command wt.exe -ErrorAction SilentlyContinue)) {
@@ -52,7 +52,7 @@ $Services = @(
 )
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host " TheOrchestrator - Starting All Agents" -ForegroundColor Cyan
+Write-Host " TheOrc - Starting All Agents" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 

@@ -1,4 +1,4 @@
-# Test Curl Commands for TheOrchestrator Chat API
+# Test Curl Commands for TheOrc Chat API
 
 # Test 1: Valid chat request with message
 curl -X POST http://localhost:8000/api/v1/chat/ \
